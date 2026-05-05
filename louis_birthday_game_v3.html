@@ -1,0 +1,2625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Joyeux Anniversaire Lulu 🎂 — by Bibi</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: #0a0a1f;
+    font-family: 'VT323', monospace;
+    color: #fff;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    image-rendering: pixelated;
+  }
+
+  #gameWrap {
+    position: relative;
+    width: 800px;
+    height: 500px;
+    max-width: 100vw;
+    max-height: 100vh;
+    border: 4px solid #ff2d6f;
+    box-shadow: 0 0 0 4px #0a0a1f, 0 0 40px #ff2d6f88;
+    background: #87ceeb;
+    overflow: hidden;
+    image-rendering: pixelated;
+  }
+
+  canvas {
+    display: block;
+    width: 100%;
+    height: 100%;
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+  }
+
+  /* HUD */
+  #hud {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 8px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #fff;
+    text-shadow: 2px 2px 0 #000;
+    pointer-events: none;
+    z-index: 5;
+  }
+  #hud .level { color: #ffec3d; }
+  #hud .hearts { color: #ff5c8a; }
+
+  /* Dialog box */
+  #dialog {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10, 10, 31, 0.94);
+    border-top: 4px solid #ff2d6f;
+    padding: 12px 16px 14px;
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    line-height: 1.1;
+    color: #fff;
+    min-height: 80px;
+    z-index: 10;
+    display: none;
+    cursor: pointer;
+  }
+  #dialog .speaker {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: #ffec3d;
+    margin-bottom: 8px;
+    letter-spacing: 1px;
+  }
+  #dialog .text { color: #fff; }
+  #dialog .hint {
+    position: absolute;
+    bottom: 4px; right: 10px;
+    font-size: 13px;
+    color: #ff5c8a;
+    animation: blink 0.7s infinite;
+  }
+  @keyframes blink { 50% { opacity: 0.2; } }
+
+  /* Choices */
+  #choices {
+    position: absolute;
+    bottom: 110px; left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 11;
+    width: 90%;
+    max-width: 600px;
+  }
+  #choices button {
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    color: #fff;
+    background: rgba(255, 45, 111, 0.85);
+    border: 3px solid #fff;
+    padding: 8px 16px;
+    cursor: pointer;
+    text-shadow: 1px 1px 0 #000;
+    text-align: left;
+    transition: transform 0.1s;
+  }
+  #choices button:hover {
+    background: #ff2d6f;
+    transform: translateX(4px);
+  }
+
+  /* Title screen */
+  #title {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #1a0030 0%, #4a0e4e 50%, #ff2d6f 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    text-align: center;
+    padding: 20px;
+  }
+  #title h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 26px;
+    color: #ffec3d;
+    text-shadow: 4px 4px 0 #ff2d6f, 8px 8px 0 #000;
+    margin-bottom: 16px;
+    line-height: 1.4;
+  }
+  #title h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 12px;
+    color: #fff;
+    margin-bottom: 24px;
+    text-shadow: 2px 2px 0 #000;
+  }
+  #title .heart {
+    font-size: 50px;
+    margin: 10px 0 16px;
+    animation: pulse 1s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+  }
+  .pixelBtn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 13px;
+    color: #fff;
+    background: #ff2d6f;
+    padding: 12px 20px;
+    border: 4px solid #fff;
+    cursor: pointer;
+    text-shadow: 2px 2px 0 #000;
+    box-shadow: 4px 4px 0 #000;
+    transition: transform 0.1s;
+  }
+  .pixelBtn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 #000; }
+  .pixelBtn:active { transform: translate(2px, 2px); box-shadow: 2px 2px 0 #000; }
+
+  #title .controls {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: #fff;
+    margin-top: 16px;
+    opacity: 0.85;
+  }
+  #title .credits {
+    font-family: 'VT323', monospace;
+    font-size: 18px;
+    color: #ffec3d;
+    margin-top: 8px;
+  }
+
+  /* End screen */
+  #endScreen {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #1a0030 0%, #4a0e4e 100%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    text-align: center;
+    padding: 20px 30px;
+    overflow-y: auto;
+  }
+  #endScreen h1 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 20px;
+    color: #ffec3d;
+    text-shadow: 3px 3px 0 #ff2d6f, 6px 6px 0 #000;
+    margin-bottom: 14px;
+  }
+  #endScreen .msg {
+    font-family: 'VT323', monospace;
+    font-size: 21px;
+    color: #fff;
+    line-height: 1.3;
+    max-width: 700px;
+    margin-bottom: 18px;
+    text-shadow: 1px 1px 0 #000;
+  }
+  #endScreen .msg .pink { color: #ff5c8a; font-weight: bold; }
+  #endScreen .msg .yellow { color: #ffec3d; }
+  #endScreen .signature {
+    margin-top: 14px;
+    font-family: 'VT323', monospace;
+    font-size: 19px;
+    color: #ff5c8a;
+  }
+
+  /* Confetti */
+  .confetti {
+    position: absolute;
+    width: 8px; height: 8px;
+    animation: fall linear forwards;
+    pointer-events: none;
+    z-index: 31;
+  }
+  @keyframes fall {
+    to { transform: translateY(700px) rotate(720deg); opacity: 0; }
+  }
+
+  /* Word puzzle UI (Level 1 ending) */
+  #puzzle {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 10, 31, 0.94);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 25;
+    padding: 20px;
+  }
+  #puzzle .question {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    color: #ffec3d;
+    text-align: center;
+    margin-bottom: 12px;
+    line-height: 1.5;
+    text-shadow: 2px 2px 0 #000;
+  }
+  #puzzle .sub {
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 18px;
+  }
+  #puzzle .slots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    flex-wrap: wrap;
+    justify-content: center;
+    min-height: 48px;
+  }
+  #puzzle .slot {
+    width: 40px; height: 48px;
+    border: 3px solid #ff2d6f;
+    background: rgba(255, 45, 111, 0.15);
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 2px 2px 0 #000;
+  }
+  #puzzle .slot.filled { background: #ff2d6f; }
+  #puzzle .letters {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 600px;
+    margin-bottom: 16px;
+  }
+  #puzzle .letter {
+    width: 40px; height: 48px;
+    border: 3px solid #fff;
+    background: #4a0e4e;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    color: #fff;
+    cursor: pointer;
+    text-shadow: 2px 2px 0 #000;
+    transition: transform 0.1s;
+  }
+  #puzzle .letter:hover { background: #6a1e6e; transform: translateY(-3px); }
+  #puzzle .letter:disabled { opacity: 0.2; cursor: not-allowed; }
+  #puzzle .actions { display: flex; gap: 10px; }
+  #puzzle .feedback {
+    font-family: 'VT323', monospace;
+    font-size: 22px;
+    margin-top: 14px;
+    min-height: 28px;
+  }
+  #puzzle .feedback.error { color: #ff5c8a; }
+  #puzzle .feedback.success { color: #ffec3d; }
+
+  /* Garage UI (Level 3) */
+  #garage {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, #2a2a3a 0%, #1a1a2a 100%);
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 25;
+    padding: 20px;
+  }
+  #garage h2 {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 18px;
+    color: #ffec3d;
+    text-shadow: 3px 3px 0 #ff2d6f, 6px 6px 0 #000;
+    margin-bottom: 8px;
+  }
+  #garage .sub {
+    font-family: 'VT323', monospace;
+    font-size: 20px;
+    color: #fff;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  #garage .cars {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    max-width: 660px;
+    width: 100%;
+  }
+  #garage .car {
+    background: #1a1a2a;
+    border: 3px solid #555;
+    padding: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+  }
+  #garage .car:hover { border-color: #ff2d6f; transform: translateY(-3px); }
+  #garage .car.done { border-color: #50d050; }
+  #garage .car.done::after {
+    content: '✓';
+    position: absolute;
+    top: 6px; right: 8px;
+    font-size: 22px;
+    color: #50d050;
+  }
+  #garage .car canvas {
+    width: 100%;
+    height: 80px;
+    image-rendering: pixelated;
+    background: #0a0a1f;
+  }
+  #garage .car .name {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 11px;
+    color: #fff;
+    margin-top: 8px;
+    text-shadow: 2px 2px 0 #000;
+  }
+  #garage .car .desc {
+    font-family: 'VT323', monospace;
+    font-size: 17px;
+    color: #ffec3d;
+    margin-top: 4px;
+  }
+
+  /* Mobile controls */
+  #mobileCtrl {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    display: none;
+    justify-content: space-between;
+    padding: 10px;
+    z-index: 8;
+    pointer-events: none;
+  }
+  #mobileCtrl .pad { display: flex; gap: 8px; pointer-events: auto; }
+  #mobileCtrl button {
+    width: 56px; height: 56px;
+    background: rgba(255, 45, 111, 0.7);
+    border: 3px solid #fff;
+    color: #fff;
+    font-family: 'Press Start 2P', monospace;
+    font-size: 14px;
+    border-radius: 8px;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: manipulation;
+  }
+  @media (max-width: 850px) {
+    #mobileCtrl { display: flex; }
+    #gameWrap { width: 100vw; height: 100vh; border: none; box-shadow: none; }
+  }
+</style>
+</head>
+<body>
+
+<div id="gameWrap">
+  <canvas id="game" width="800" height="500"></canvas>
+
+  <div id="hud">
+    <div class="level" id="levelLabel">LEVEL 1</div>
+    <div class="hearts" id="heartsLabel">♥ 0 / 0</div>
+  </div>
+
+  <div id="dialog">
+    <div class="speaker" id="speaker">BIBI</div>
+    <div class="text" id="dialogText"></div>
+    <div class="hint">▼ SPACE / TAP</div>
+  </div>
+
+  <div id="choices"></div>
+
+  <div id="puzzle">
+    <div class="question" id="puzzleQuestion">WHO FOUND YOUR WALLET?</div>
+    <div class="sub">Type her nickname...</div>
+    <div class="slots" id="puzzleSlots"></div>
+    <div class="letters" id="puzzleLetters"></div>
+    <div class="actions">
+      <button class="pixelBtn" id="puzzleBack" style="font-size:11px">← BACK</button>
+      <button class="pixelBtn" id="puzzleSubmit" style="font-size:11px">SEND ▶</button>
+    </div>
+    <div class="feedback" id="puzzleFeedback"></div>
+  </div>
+
+  <div id="garage">
+    <h2>LULU'S DREAM GARAGE 🏎️</h2>
+    <div class="sub" id="garageSub">Pick a car. Drive it. Come back. Take another. ♥</div>
+    <div class="cars" id="garageCars"></div>
+  </div>
+
+  <div id="mobileCtrl">
+    <div class="pad">
+      <button id="btnLeft">◀</button>
+      <button id="btnRight">▶</button>
+    </div>
+    <div class="pad">
+      <button id="btnDown">▼</button>
+      <button id="btnJump">↑</button>
+    </div>
+  </div>
+
+  <div id="title">
+    <h1>LULU & BIBI<br>THE ADVENTURE</h1>
+    <div class="heart">💖</div>
+    <h2>JOYEUX ANNIVERSAIRE LOUIS — 27</h2>
+    <button class="pixelBtn" id="startBtn">▶ PRESS START</button>
+    <div class="controls">← → MOVE &nbsp;•&nbsp; ↑ / SPACE JUMP &nbsp;•&nbsp; SPACE for dialogs</div>
+    <div class="credits">A pixel love story by Bibi 🎮💕</div>
+  </div>
+
+  <div id="endScreen">
+    <h1>🎂 HAPPY BIRTHDAY LULU 🎂</h1>
+    <div class="msg" id="endMsg"></div>
+    <button class="pixelBtn" id="restartBtn" style="font-size:11px">▶ PLAY AGAIN</button>
+    <div class="signature">— With all my love, your petite créature sauvage 💖</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// LULU & BIBI v2 — pixel love story
+// ═══════════════════════════════════════════════════════════════
+
+const canvas = document.getElementById('game');
+const ctx = canvas.getContext('2d');
+ctx.imageSmoothingEnabled = false;
+
+const W = 800, H = 500;
+const GRAVITY = 0.6;
+const JUMP_POWER = -11;
+const SPEED = 3.2;
+
+// Game state
+let scene = 'title'; // title | level1 | puzzle | endless | garage | drive | end
+let currentLevel = 0;
+let player, partner, hearts, platforms, enemies, goal, levelData;
+let keys = {};
+let cameraX = 0;
+let cameraY = 0;
+let dialogQueue = [];
+let dialogActive = false;
+let pendingChoices = null;
+let levelComplete = false;
+let particles = [];
+let frame = 0;
+let souvenirText = '';
+let souvenirTimer = 0;
+
+// Drive state (level 3)
+let drive = null;
+let carsCompleted = { convertible: false, patrol: false, ferrari: false, caterham: false };
+
+// Endless runner state (level 2)
+let endless = null;
+
+// ─── Pixel helpers ──────────────────────────────────────────
+function px(x, y, w, h, color) {
+  ctx.fillStyle = color;
+  ctx.fillRect(Math.floor(x), Math.floor(y), w, h);
+}
+
+// Bibi sprite (32x32 area)
+function drawBibi(x, y, facing, anim, mode = 'run') {
+  const fx = facing === 'right' ? 1 : -1;
+  const ox = facing === 'right' ? x : x + 24;
+  const bob = mode === 'run' ? Math.floor(anim) % 2 : 0;
+
+  ctx.save();
+  ctx.translate(ox, y);
+  ctx.scale(fx, 1);
+
+  // Hair back
+  px(2, 4, 4, 8, '#5a3a1a');
+  // Head
+  px(6, 2, 10, 10, '#ffd9b3');
+  // Hair top
+  px(6, 2, 10, 3, '#7a4a22');
+  px(4, 4, 2, 4, '#7a4a22');
+  // Eyes
+  px(9, 6, 2, 2, '#000');
+  px(13, 6, 2, 2, '#000');
+  // Famous belle guance
+  px(8, 9, 2, 1, '#ff8fa3');
+  px(14, 9, 2, 1, '#ff8fa3');
+  // Smile
+  px(10, 10, 4, 1, '#c44');
+  // Top
+  px(6, 12, 10, 8, '#ff5c8a');
+  // Arms
+  px(3, 13 + bob, 3, 6, '#ffd9b3');
+  px(16, 13 - bob, 3, 6, '#ffd9b3');
+  // Shorts
+  px(7, 20, 8, 4, '#222');
+  // Legs
+  px(7, 24 - bob, 3, 4 + bob, '#ffd9b3');
+  px(12, 24 + bob, 3, 4 - bob, '#ffd9b3');
+  // Shoes
+  px(7, 28, 4, 2, '#fff');
+  px(12, 28, 4, 2, '#fff');
+
+  ctx.restore();
+}
+
+// Louis sprite
+function drawLouis(x, y, facing, anim, mode = 'idle') {
+  const fx = facing === 'right' ? 1 : -1;
+  const ox = facing === 'right' ? x : x + 24;
+  const bob = mode === 'run' ? Math.floor(anim) % 2 : 0;
+
+  ctx.save();
+  ctx.translate(ox, y);
+  ctx.scale(fx, 1);
+
+  // Long hair
+  px(4, 4, 14, 12, '#3a2410');
+  // Head
+  px(6, 2, 10, 10, '#f0c8a0');
+  // Hair top wavy
+  px(5, 1, 12, 4, '#3a2410');
+  px(4, 3, 2, 8, '#3a2410');
+  px(16, 3, 2, 6, '#3a2410');
+  // Eyes
+  px(9, 6, 2, 2, '#000');
+  px(13, 6, 2, 2, '#000');
+  // Smile (the Navigo smile)
+  px(10, 10, 4, 1, '#943');
+  // T-shirt
+  px(6, 12, 10, 8, '#3d7eff');
+  // Arms
+  px(3, 13 + bob, 3, 6, '#f0c8a0');
+  px(16, 13 - bob, 3, 6, '#f0c8a0');
+  // Pants
+  px(7, 20, 8, 6, '#1a1a3a');
+  // Shoes
+  px(7, 26 - bob, 3, 4 + bob, '#222');
+  px(12, 26 + bob, 3, 4 - bob, '#222');
+
+  ctx.restore();
+}
+
+// Gravel bike under a character (rider above)
+function drawBikeUnder(x, y, anim, color = '#ff2d6f') {
+  ctx.save();
+  ctx.translate(x, y);
+  const spin = (anim / 3);
+  // Frame
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(4, 16); ctx.lineTo(14, 6); ctx.lineTo(24, 16);
+  ctx.moveTo(14, 6); ctx.lineTo(18, 16);
+  ctx.moveTo(18, 16); ctx.lineTo(24, 16);
+  ctx.stroke();
+  // Handlebar
+  ctx.beginPath();
+  ctx.moveTo(14, 6); ctx.lineTo(11, 4); ctx.lineTo(17, 4);
+  ctx.stroke();
+  // Wheels
+  ctx.fillStyle = '#000';
+  ctx.beginPath();
+  ctx.arc(4, 16, 5, 0, Math.PI * 2);
+  ctx.arc(24, 16, 5, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = '#444';
+  ctx.beginPath();
+  ctx.arc(4, 16, 3, 0, Math.PI * 2);
+  ctx.arc(24, 16, 3, 0, Math.PI * 2);
+  ctx.fill();
+  // Spokes
+  ctx.strokeStyle = '#888';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(4 - Math.cos(spin) * 3, 16 - Math.sin(spin) * 3);
+  ctx.lineTo(4 + Math.cos(spin) * 3, 16 + Math.sin(spin) * 3);
+  ctx.moveTo(24 - Math.cos(spin) * 3, 16 - Math.sin(spin) * 3);
+  ctx.lineTo(24 + Math.cos(spin) * 3, 16 + Math.sin(spin) * 3);
+  ctx.stroke();
+  ctx.restore();
+}
+
+// Character ON a bike (combined, smaller character)
+function drawBibiOnBike(x, y, anim, facing = 'right') {
+  const fx = facing === 'right' ? 1 : -1;
+  const ox = facing === 'right' ? x : x + 28;
+
+  // Bike below
+  drawBikeUnder(x, y + 14, anim);
+
+  ctx.save();
+  ctx.translate(ox, y - 4);
+  ctx.scale(fx, 1);
+
+  // Body crouched bike position
+  // Hair
+  px(8, 0, 4, 6, '#5a3a1a');
+  px(6, 0, 8, 8, '#7a4a22');
+  // Face
+  px(7, 4, 8, 6, '#ffd9b3');
+  // Eye
+  px(11, 5, 1, 1, '#000');
+  // Body — pink
+  px(6, 8, 10, 6, '#ff5c8a');
+  // Backpack
+  px(4, 10, 3, 5, '#ff2d6f');
+  // Arms forward
+  px(13, 9, 3, 3, '#ffd9b3');
+  // Legs pedaling
+  const pedal = Math.sin(anim / 2);
+  px(8, 14, 3, 3 + Math.floor(pedal * 2), '#222');
+  px(12, 14, 3, 3 - Math.floor(pedal * 2), '#222');
+
+  ctx.restore();
+}
+
+function drawLouisOnBike(x, y, anim, facing = 'right') {
+  const fx = facing === 'right' ? 1 : -1;
+  const ox = facing === 'right' ? x : x + 28;
+
+  drawBikeUnder(x, y + 14, anim, '#3d7eff');
+
+  ctx.save();
+  ctx.translate(ox, y - 4);
+  ctx.scale(fx, 1);
+
+  // Long hair
+  px(5, 1, 10, 8, '#3a2410');
+  // Face
+  px(7, 4, 8, 6, '#f0c8a0');
+  // Eye
+  px(11, 5, 1, 1, '#000');
+  // Body — blue
+  px(6, 8, 10, 6, '#3d7eff');
+  // Backpack
+  px(4, 10, 3, 5, '#1a3a8a');
+  // Arms forward
+  px(13, 9, 3, 3, '#f0c8a0');
+  // Legs
+  const pedal = Math.sin(anim / 2 + Math.PI);
+  px(8, 14, 3, 3 + Math.floor(pedal * 2), '#1a1a3a');
+  px(12, 14, 3, 3 - Math.floor(pedal * 2), '#1a1a3a');
+
+  ctx.restore();
+}
+
+// Pickups
+function drawWallet(x, y, t) {
+  const bob = Math.sin(t / 12) * 2;
+  ctx.save();
+  ctx.translate(x, y + bob);
+  ctx.fillStyle = 'rgba(255, 200, 50, 0.4)';
+  ctx.beginPath();
+  ctx.arc(8, 6, 16, 0, Math.PI * 2);
+  ctx.fill();
+  px(2, 2, 14, 9, '#c8001a');
+  px(2, 2, 14, 2, '#a00015');
+  px(3, 3, 12, 1, '#ff4060');
+  px(11, 6, 3, 2, '#ffd700');
+  ctx.restore();
+}
+
+function drawHeart(x, y, t) {
+  const bob = Math.sin(t / 10) * 2;
+  ctx.save();
+  ctx.translate(x, y + bob);
+  px(2, 2, 4, 2, '#ff2d6f');
+  px(8, 2, 4, 2, '#ff2d6f');
+  px(1, 3, 12, 4, '#ff2d6f');
+  px(2, 7, 10, 2, '#ff5c8a');
+  px(4, 9, 6, 2, '#ff5c8a');
+  px(6, 11, 2, 1, '#ff5c8a');
+  px(3, 3, 1, 1, '#fff');
+  ctx.restore();
+}
+
+// Obstacles
+function drawTrash(x, y, type) {
+  ctx.save();
+  ctx.translate(x, y);
+  if (type === 0) { // bottle
+    px(5, 0, 4, 3, '#3d8a3d');
+    px(4, 3, 6, 12, '#5dba5d');
+    px(5, 4, 4, 10, '#7ee87e');
+  } else if (type === 1) { // tissue
+    px(2, 8, 12, 6, '#fff');
+    px(4, 6, 8, 4, '#eee');
+  } else { // bin
+    px(2, 4, 12, 12, '#444');
+    px(1, 2, 14, 3, '#666');
+    px(4, 6, 2, 8, '#222');
+    px(8, 6, 2, 8, '#222');
+  }
+  ctx.restore();
+}
+
+function drawRock(x, y) {
+  ctx.save();
+  ctx.translate(x, y);
+  px(2, 6, 16, 10, '#777');
+  px(4, 4, 12, 4, '#999');
+  px(6, 2, 8, 4, '#aaa');
+  px(4, 14, 14, 2, '#555');
+  ctx.restore();
+}
+
+// Cake (final goal level 2)
+function drawCake(x, y, t) {
+  ctx.save();
+  ctx.translate(x, y);
+  px(0, 30, 40, 4, '#aaa');
+  px(4, 18, 32, 12, '#ffd9b3');
+  px(4, 18, 32, 2, '#fff');
+  px(8, 10, 24, 8, '#ff5c8a');
+  px(8, 10, 24, 2, '#fff');
+  px(10, 6, 4, 4, '#dc0000');
+  px(18, 6, 4, 4, '#dc0000');
+  px(26, 6, 4, 4, '#dc0000');
+  px(11, 0, 2, 6, '#fff');
+  px(19, 0, 2, 6, '#fff');
+  px(27, 0, 2, 6, '#fff');
+  const flicker = Math.sin(t / 4) * 1;
+  px(11, -4 + flicker, 2, 2, '#ffec3d');
+  px(19, -4 - flicker, 2, 2, '#ffec3d');
+  px(27, -4 + flicker, 2, 2, '#ffec3d');
+  ctx.restore();
+}
+
+// ═══ Cars (used in garage + driving scenes) ═══
+function drawConvertible(x, y, anim, color = '#ff5c8a') {
+  ctx.save();
+  ctx.translate(x, y);
+  // Body
+  px(6, 12, 48, 10, color);
+  px(8, 8, 18, 4, color); // hood
+  px(28, 8, 22, 4, color);
+  // Windshield
+  px(26, 4, 4, 8, '#7ec0e8');
+  // Seats
+  px(30, 6, 12, 6, '#5a3a1a');
+  px(32, 4, 8, 4, '#5a3a1a');
+  // Door
+  ctx.strokeStyle = '#a03050';
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(26, 12); ctx.lineTo(26, 22); ctx.stroke();
+  // Headlight
+  px(52, 13, 3, 3, '#ffec3d');
+  // Tail
+  px(5, 13, 2, 3, '#ff0040');
+  // Wheels
+  const ws = Math.floor(anim / 3) % 4;
+  px(10, 20, 8, 6, '#000');
+  px(42, 20, 8, 6, '#000');
+  px(13, 22, 2, 2, ws < 2 ? '#888' : '#444');
+  px(45, 22, 2, 2, ws < 2 ? '#888' : '#444');
+  ctx.restore();
+}
+
+function drawPatrol(x, y, anim) {
+  ctx.save();
+  ctx.translate(x, y);
+  // Boxy 4x4
+  px(4, 6, 50, 16, '#3d6028'); // body
+  px(8, 2, 42, 6, '#3d6028');  // top
+  // Windows
+  px(10, 4, 12, 5, '#7ec0e8');
+  px(24, 4, 12, 5, '#7ec0e8');
+  px(38, 4, 10, 5, '#7ec0e8');
+  // Roof rack
+  px(6, 0, 46, 2, '#222');
+  px(10, -1, 2, 2, '#222');
+  px(24, -1, 2, 2, '#222');
+  px(40, -1, 2, 2, '#222');
+  // Headlights
+  px(52, 8, 3, 4, '#ffec3d');
+  px(52, 14, 3, 3, '#ffec3d');
+  // Wheels (chunky)
+  const ws = Math.floor(anim / 2) % 4;
+  px(8, 18, 12, 8, '#000');
+  px(38, 18, 12, 8, '#000');
+  px(12, 20, 4, 4, '#444');
+  px(42, 20, 4, 4, '#444');
+  px(13, 21, 2, 2, ws < 2 ? '#888' : '#222');
+  px(43, 21, 2, 2, ws < 2 ? '#888' : '#222');
+  ctx.restore();
+}
+
+function drawFerrari(x, y, anim) {
+  ctx.save();
+  ctx.translate(x, y);
+  // Low slung body
+  px(4, 14, 52, 8, '#dc0000');
+  px(8, 10, 18, 4, '#dc0000');
+  px(28, 10, 24, 4, '#dc0000');
+  px(10, 8, 14, 2, '#a00000');
+  px(30, 8, 18, 2, '#a00000');
+  // Windshield
+  px(24, 6, 8, 6, '#1a3a5a');
+  px(25, 7, 6, 4, '#3d7eff');
+  // Stripe
+  px(4, 13, 52, 1, '#fff200');
+  // Logo
+  px(28, 11, 2, 2, '#fff200');
+  // Headlight
+  px(54, 14, 2, 3, '#ffec3d');
+  // Tail
+  px(4, 14, 2, 3, '#ff0');
+  // Wheels (sport)
+  const ws = Math.floor(anim) % 4;
+  px(8, 20, 10, 6, '#000');
+  px(42, 20, 10, 6, '#000');
+  px(11, 22, 4, 2, '#aaa');
+  px(45, 22, 4, 2, '#aaa');
+  ctx.restore();
+}
+
+function drawCaterham(x, y, anim) {
+  ctx.save();
+  ctx.translate(x, y);
+  // Open wheel racer body
+  px(14, 14, 32, 6, '#1a4a8a');
+  px(20, 10, 14, 4, '#1a4a8a');
+  // Cockpit
+  px(22, 8, 10, 6, '#000');
+  px(24, 9, 6, 3, '#3d7eff');
+  // Nose
+  px(46, 14, 6, 5, '#1a4a8a');
+  px(48, 13, 4, 1, '#ffec3d');
+  // Stripe
+  px(14, 16, 32, 1, '#fff');
+  px(14, 19, 32, 1, '#fff');
+  // Number
+  px(28, 11, 1, 2, '#fff');
+  px(30, 11, 1, 2, '#fff');
+  // Wheels exposed
+  const ws = Math.floor(anim) % 4;
+  px(6, 16, 10, 10, '#000');
+  px(44, 16, 10, 10, '#000');
+  px(8, 18, 6, 6, '#aaa');
+  px(46, 18, 6, 6, '#aaa');
+  px(10, 20, 2, 2, ws < 2 ? '#fff' : '#333');
+  px(48, 20, 2, 2, ws < 2 ? '#fff' : '#333');
+  ctx.restore();
+}
+
+// Backgrounds
+function drawSeineBackground(t) {
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#2a2a4a');
+  grad.addColorStop(0.5, '#5a5a7a');
+  grad.addColorStop(1, '#8a8aaa');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Pont Alexandre III arches (with golden statues hint)
+  ctx.fillStyle = '#1a1a2a';
+  for (let i = 0; i < 4; i++) {
+    const bx = (i * 280 - cameraX * 0.3) % (W + 280) - 140;
+    ctx.beginPath();
+    ctx.arc(bx + 100, 320, 80, Math.PI, 0);
+    ctx.fill();
+    ctx.fillRect(bx, 250, 200, 70);
+  }
+  // Lamp posts
+  for (let i = 0; i < 6; i++) {
+    const lx = (i * 200 - cameraX * 0.5) % (W + 200) - 100;
+    px(lx, 280, 2, 60, '#3a2a1a');
+    px(lx - 4, 274, 10, 6, '#ffd700');
+    ctx.fillStyle = 'rgba(255, 215, 0, 0.18)';
+    ctx.beginPath();
+    ctx.arc(lx + 1, 277, 22, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Seine
+  ctx.fillStyle = '#3a4a6a';
+  ctx.fillRect(0, 380, W, 120);
+  for (let i = 0; i < 30; i++) {
+    const sx = (i * 30 + Math.sin(t / 30 + i) * 5) % W;
+    px(sx, 390 + (i % 3) * 8, 8, 1, '#5a7aaa');
+  }
+}
+
+function drawItalyBackground(t) {
+  // Mediterranean sky
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#5ec0ff');
+  grad.addColorStop(0.6, '#ffd970');
+  grad.addColorStop(1, '#90c060');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+
+  // Sun
+  ctx.fillStyle = '#fff200';
+  ctx.beginPath();
+  ctx.arc(620, 130, 35, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.fillStyle = 'rgba(255, 255, 200, 0.4)';
+  ctx.beginPath();
+  ctx.arc(620, 130, 55, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Distant sea (parallax)
+  ctx.fillStyle = '#2da8d8';
+  ctx.fillRect(0, 240, W, 60);
+  for (let i = 0; i < 25; i++) {
+    const sx = (i * 36 + Math.sin(t / 30 + i) * 6 - cameraX * 0.2) % (W + 50);
+    px(sx, 250 + (i % 4) * 10, 10, 1, '#7ed8f0');
+  }
+
+  // Cinque Terre style colorful houses
+  const colors = ['#ff8a4a', '#ffd970', '#ff5c8a', '#9ed05a', '#5cb0ff', '#ff7878'];
+  for (let i = 0; i < 14; i++) {
+    const bx = (i * 90 - cameraX * 0.5) % (W + 100) - 50;
+    const bh = 60 + (i * 13 % 50);
+    const bc = colors[i % colors.length];
+    ctx.fillStyle = bc;
+    ctx.fillRect(bx, 300 - bh, 70, bh);
+    // Roof
+    ctx.fillStyle = '#a04030';
+    ctx.fillRect(bx - 3, 300 - bh - 6, 76, 6);
+    // Windows
+    for (let r = 0; r < 2; r++) {
+      for (let w = 0; w < 2; w++) {
+        px(bx + 10 + w * 30, 300 - bh + 12 + r * 22, 12, 14, '#3a3a3a');
+        px(bx + 12 + w * 30, 300 - bh + 14 + r * 22, 8, 10, '#7ec0e8');
+      }
+    }
+    // Shutters
+    px(bx + 8, 300 - bh + 12, 2, 14, '#2a4a8a');
+    px(bx + 22, 300 - bh + 12, 2, 14, '#2a4a8a');
+  }
+
+  // Cypress trees
+  for (let i = 0; i < 5; i++) {
+    const tx = (i * 200 - cameraX * 0.7) % (W + 200) - 100;
+    px(tx + 10, 320, 6, 50, '#2d4a1a');
+    ctx.fillStyle = '#3d5a28';
+    ctx.beginPath();
+    ctx.ellipse(tx + 13, 330, 8, 28, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+// Drive scene backgrounds
+function drawDriveBg_road(t, scrollX) {
+  // Coastal road - blue sky, sea
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#5ec0ff');
+  grad.addColorStop(0.7, '#a0e0ff');
+  grad.addColorStop(1, '#2da8d8');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  // Sun
+  ctx.fillStyle = '#fff200';
+  ctx.beginPath();
+  ctx.arc(640, 110, 35, 0, Math.PI * 2);
+  ctx.fill();
+  // Mountains far
+  ctx.fillStyle = '#5a7aa0';
+  for (let i = 0; i < 6; i++) {
+    const mx = (i * 200 - scrollX * 0.1) % (W + 200) - 100;
+    ctx.beginPath();
+    ctx.moveTo(mx, 280);
+    ctx.lineTo(mx + 100, 180);
+    ctx.lineTo(mx + 200, 280);
+    ctx.fill();
+  }
+  // Sea
+  ctx.fillStyle = '#2da8d8';
+  ctx.fillRect(0, 280, W, 80);
+  // Sandy shore
+  ctx.fillStyle = '#f0d090';
+  ctx.fillRect(0, 360, W, 20);
+  // Road (asphalt)
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillRect(0, 380, W, 120);
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fillRect(0, 378, W, 4);
+  // Lane markings (animated)
+  ctx.fillStyle = '#fff200';
+  for (let i = -1; i < 12; i++) {
+    const lx = (i * 80 - scrollX) % (W + 80);
+    ctx.fillRect(lx, 432, 40, 6);
+  }
+  // Palm trees
+  for (let i = 0; i < 5; i++) {
+    const tx = (i * 220 - scrollX * 0.5) % (W + 220) - 110;
+    px(tx + 20, 320, 6, 60, '#5a3a1a');
+    ctx.fillStyle = '#3d8a3d';
+    ctx.beginPath();
+    ctx.ellipse(tx + 23, 320, 26, 8, 0, 0, Math.PI * 2);
+    ctx.ellipse(tx + 23, 320, 8, 22, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawDriveBg_rally(t, scrollX) {
+  // Dusty desert/gravel
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#e8b070');
+  grad.addColorStop(0.5, '#d09060');
+  grad.addColorStop(1, '#a06040');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  // Sun (hazy)
+  ctx.fillStyle = '#ffd060';
+  ctx.beginPath();
+  ctx.arc(620, 120, 40, 0, Math.PI * 2);
+  ctx.fill();
+  // Rocky cliffs
+  ctx.fillStyle = '#8a5030';
+  for (let i = 0; i < 7; i++) {
+    const mx = (i * 180 - scrollX * 0.2) % (W + 180) - 90;
+    ctx.beginPath();
+    ctx.moveTo(mx, 320);
+    ctx.lineTo(mx + 50, 220);
+    ctx.lineTo(mx + 90, 250);
+    ctx.lineTo(mx + 140, 200);
+    ctx.lineTo(mx + 180, 320);
+    ctx.fill();
+  }
+  // Mid hills
+  ctx.fillStyle = '#a06840';
+  ctx.fillRect(0, 320, W, 60);
+  // Gravel road
+  ctx.fillStyle = '#7a5030';
+  ctx.fillRect(0, 380, W, 120);
+  // Rocks scattered
+  for (let i = 0; i < 20; i++) {
+    const rx = (i * 90 - scrollX * 1.2) % (W + 50);
+    const ry = 390 + (i % 3) * 25;
+    px(rx, ry, 4 + (i % 3), 3, '#5a3a20');
+  }
+  // Cacti
+  for (let i = 0; i < 4; i++) {
+    const tx = (i * 250 - scrollX * 0.5) % (W + 250) - 125;
+    px(tx + 20, 350, 4, 30, '#3d8a3d');
+    px(tx + 16, 356, 4, 4, '#3d8a3d');
+    px(tx + 24, 360, 4, 4, '#3d8a3d');
+  }
+  // Dust clouds (animated)
+  for (let i = 0; i < 8; i++) {
+    const dx = (i * 100 - scrollX * 1.5 + Math.sin(t / 10 + i) * 10) % (W + 100);
+    ctx.fillStyle = `rgba(220, 180, 130, ${0.4 + Math.sin(t / 20 + i) * 0.2})`;
+    ctx.beginPath();
+    ctx.arc(dx, 420, 18, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawDriveBg_circuit(t, scrollX) {
+  // Race circuit — green stands, blue sky
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#3aa0e8');
+  grad.addColorStop(0.7, '#7ed0ff');
+  grad.addColorStop(1, '#5da030');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  // Crowd stands
+  ctx.fillStyle = '#444';
+  ctx.fillRect(0, 240, W, 50);
+  for (let i = 0; i < 100; i++) {
+    const cx = (i * 14 - scrollX * 0.3) % W;
+    px(cx, 250 + (i % 3) * 4, 4, 4, ['#ff5c8a', '#3d7eff', '#ffec3d', '#fff'][i % 4]);
+  }
+  // Barrier (rumble strip)
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 290, W, 8);
+  ctx.fillStyle = '#ff0040';
+  for (let i = -1; i < 20; i++) {
+    const sx = (i * 50 - scrollX * 0.7) % (W + 50);
+    ctx.fillRect(sx, 290, 25, 8);
+  }
+  // Grass infield
+  ctx.fillStyle = '#5da030';
+  ctx.fillRect(0, 298, W, 80);
+  // Track tarmac
+  ctx.fillStyle = '#2a2a2a';
+  ctx.fillRect(0, 378, W, 122);
+  ctx.fillStyle = '#1a1a1a';
+  ctx.fillRect(0, 376, W, 4);
+  // Track lines
+  ctx.fillStyle = '#fff';
+  for (let i = -1; i < 14; i++) {
+    const lx = (i * 70 - scrollX) % (W + 70);
+    ctx.fillRect(lx, 432, 30, 4);
+  }
+  // Banners on stands
+  ctx.fillStyle = '#ffec3d';
+  for (let i = 0; i < 4; i++) {
+    const bx = (i * 200 - scrollX * 0.4) % (W + 200) - 100;
+    ctx.fillRect(bx, 230, 80, 10);
+    ctx.fillStyle = '#ff2d6f';
+    ctx.fillRect(bx + 3, 232, 30, 6);
+    ctx.fillStyle = '#ffec3d';
+  }
+}
+
+function drawDriveBg_track(t, scrollX) {
+  // Caterham track day — green countryside
+  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  grad.addColorStop(0, '#7ec0e8');
+  grad.addColorStop(0.6, '#c0e0a0');
+  grad.addColorStop(1, '#5da030');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, W, H);
+  // Clouds
+  for (let i = 0; i < 5; i++) {
+    const cx = (i * 200 - scrollX * 0.05) % (W + 200) - 100;
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.arc(cx + 30, 80, 18, 0, Math.PI * 2);
+    ctx.arc(cx + 50, 80, 22, 0, Math.PI * 2);
+    ctx.arc(cx + 70, 80, 18, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  // Distant trees
+  ctx.fillStyle = '#3d6028';
+  for (let i = 0; i < 12; i++) {
+    const tx = (i * 80 - scrollX * 0.3) % (W + 80) - 40;
+    ctx.beginPath();
+    ctx.arc(tx + 30, 280, 22, 0, Math.PI * 2);
+    ctx.fill();
+    px(tx + 28, 280, 4, 20, '#5a3a1a');
+  }
+  // Grass
+  ctx.fillStyle = '#5da030';
+  ctx.fillRect(0, 300, W, 80);
+  // Track edge
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 378, W, 4);
+  ctx.fillStyle = '#ff0040';
+  for (let i = -1; i < 20; i++) {
+    const sx = (i * 50 - scrollX * 0.8) % (W + 50);
+    ctx.fillRect(sx, 380, 25, 4);
+  }
+  // Tarmac
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillRect(0, 384, W, 116);
+  // Lines
+  ctx.fillStyle = '#fff200';
+  for (let i = -1; i < 14; i++) {
+    const lx = (i * 80 - scrollX) % (W + 80);
+    ctx.fillRect(lx, 436, 40, 4);
+  }
+}
+
+// ─── LEVEL DATA ────────────────────────────────────────
+const LEVELS = [
+  // ─────────── LEVEL 1: PARIS ───────────
+  {
+    name: "L1 — PARIS, 7H30 AM",
+    bg: drawSeineBackground,
+    width: 2400,
+    intro: [
+      { speaker: "BIBI", text: "Friday morning. Cold November. French class à 8h — ma prof est trop forte." },
+      { speaker: "BIBI", text: "Let's run on the quais first. Just me, two crazy joggers, and the trash collectors..." },
+      { speaker: "BIBI", text: "Slalom between bottles, tissues, and... vomitini. Allez Bibi !" },
+      { speaker: "GAME", text: "→ Run, jump, find something RED under Pont Alexandre III." },
+    ],
+    platforms: [
+      { x: 0, y: 420, w: 600, h: 80 },
+      { x: 700, y: 420, w: 400, h: 80 },
+      { x: 1200, y: 420, w: 500, h: 80 },
+      { x: 1800, y: 420, w: 600, h: 80 },
+      { x: 620, y: 340, w: 60, h: 14 },
+      { x: 1110, y: 340, w: 60, h: 14 },
+      { x: 1720, y: 340, w: 60, h: 14 },
+    ],
+    enemies: [
+      { x: 350, y: 405, type: 0 },
+      { x: 480, y: 408, type: 1 },
+      { x: 850, y: 405, type: 0 },
+      { x: 980, y: 405, type: 2 },
+      { x: 1300, y: 405, type: 1 },
+      { x: 1450, y: 405, type: 0 },
+      { x: 1600, y: 405, type: 2 },
+      { x: 1900, y: 405, type: 1 },
+      { x: 2050, y: 405, type: 0 },
+    ],
+    hearts: [
+      { x: 250, y: 380, text: "💭 La rue Bellechasse — my tiny Paris hole." },
+      { x: 640, y: 320, text: "💭 The quais all to myself at dawn." },
+      { x: 950, y: 380, text: "💭 Petite créature sauvage 💕" },
+      { x: 1350, y: 380, text: "💭 4km already. Cold legs, warm brain." },
+      { x: 1740, y: 320, text: "💭 The French prof — un pezzo forte." },
+    ],
+    goal: { x: 2200, y: 400, type: 'wallet' },
+    outro: [
+      { speaker: "BIBI", text: "A red object! Under the bridge! Quick — before the trash truck..." },
+      { speaker: "BIBI", text: "A wallet. Full of cards, ID, a Navigo. Poor guy, who lost it?" },
+      { speaker: "BIBI", text: "(Kindness is who I am. I cannot leave it here.)" },
+      { speaker: "BIBI", text: "Now — back home, shower running, time to find this mystery boy 👀" },
+      { speaker: "GAME", text: "→ MINI-GAME: type the answer to his future question..." },
+    ],
+  },
+];
+
+// ─── ENDLESS RUNNER (Level 2) ─────────────────────────────
+// Biomes: street (Nice) → coast (Liguria) → mountains (Tuscany) → city (Roma!)
+const BIOMES = [
+  { name: 'NICE — DEPART', drawer: 'street', color: '#5cb0ff', intro: 'Nice → Roma. Allez bouboille!' },
+  { name: 'LIGURIA COAST', drawer: 'coast', color: '#2da8d8', intro: 'The sea! Focaccia time 🌊' },
+  { name: 'CINQUE TERRE', drawer: 'coast2', color: '#ff8a4a', intro: 'Climbing through colorful villages 🏘️' },
+  { name: 'TOSCANA HILLS', drawer: 'mountain', color: '#90c060', intro: 'Hills, cypresses, sunset 🌅' },
+  { name: 'ROAD TO ROMA', drawer: 'street2', color: '#ffd970', intro: 'Almost there... ROMA awaits 🏛️' },
+];
+
+const FOOD_TYPES = [
+  { id: 'focaccia', label: 'Focaccia', color: '#ffc060', value: 1 },
+  { id: 'pizza', label: 'Pizza Napoletana', color: '#ff5c4a', value: 1 },
+  { id: 'gelato', label: 'Gelato di Siena', color: '#ff8fa3', value: 1 },
+  { id: 'pasta', label: 'Pasta al Pomodoro', color: '#ffd970', value: 1 },
+  { id: 'lasagne', label: "Bibi's Lasagne 💕", color: '#ff7050', value: 2 },
+  { id: 'wine', label: 'Chianti Toscano', color: '#a02040', value: 1 },
+];
+
+const VIEWS = [
+  '💭 Liguria — turquoise sea, hot focaccia 🌊',
+  '💭 5 Terre villages clinging to cliffs 🏘️',
+  '💭 Siena, Piazza del Campo at midnight 🍦',
+  '💭 Tuscan hills, cypresses, pink sunset 🌅',
+  '💭 The tent, two sleeping bags, your snoring 😂',
+  '💭 Pizza napoletana — best of our lives 🍕',
+  '💭 Sunday lasagne 🥘',
+  '💭 « Petite créature sauvage » 💕',
+  '💭 You sweating after 5km — « che schifo » 😂',
+  "💭 You're a champion, bouboille 🏆",
+];
+
+// ─── Drive (Level 3) car configs ───────────────────────────
+const CARS = {
+  convertible: {
+    name: 'CONVERTIBLE (THE DREAM)',
+    desc: 'Our dream — road trip with the top down 💕',
+    drawer: drawConvertible,
+    bg: drawDriveBg_road,
+    duration: 26 * 60, // ~26 seconds at 60fps
+    obstacleType: 'palm',
+    intro: [
+      { speaker: "LULU", text: "First key. Our DREAM car — a convertible." },
+      { speaker: "BIBI", text: "Top down, hair in the wind, sea on our right..." },
+      { speaker: "LULU", text: "Hop in, bouboille. Let's see how far this dream goes 🌅" },
+      { speaker: "GAME", text: "→ ↑ accelerate, ↓ brake, ← → swerve. Avoid palms. Reach the finish 🏁" },
+    ],
+    outro: [
+      { speaker: "BIBI", text: "🎵 « ...and we just keep driving... » 🎵" },
+      { speaker: "LULU", text: "One day we're really doing this. Promise." },
+    ],
+  },
+  patrol: {
+    name: 'NISSAN PATROL (RALLY)',
+    desc: 'Off-road. Gravel. Dust. Adventure 🏜️',
+    drawer: drawPatrol,
+    bg: drawDriveBg_rally,
+    duration: 28 * 60,
+    obstacleType: 'rock',
+    intro: [
+      { speaker: "LULU", text: "Patrol time. Off-road. No GPS. Just instinct." },
+      { speaker: "BIBI", text: "...this is going to be sandy. Très très sandy." },
+      { speaker: "LULU", text: "Rally mode: ON 💪" },
+      { speaker: "GAME", text: "→ Dodge rocks. The dust is FRIENDLY 😎" },
+    ],
+    outro: [
+      { speaker: "LULU", text: "DUSTY. SANDY. PERFECT." },
+      { speaker: "BIBI", text: "...che schifo, mais incroyable. 😂" },
+    ],
+  },
+  ferrari: {
+    name: 'FERRARI MODENA',
+    desc: 'Circuit. Pure speed. The roar 🏎️',
+    drawer: drawFerrari,
+    bg: drawDriveBg_circuit,
+    duration: 26 * 60,
+    obstacleType: 'cone',
+    intro: [
+      { speaker: "LULU", text: "And now... the Modena. On a real circuit." },
+      { speaker: "BIBI", text: "*pretending I understand the engine sound*" },
+      { speaker: "LULU", text: "Listen to that V8. That's MUSIC." },
+      { speaker: "GAME", text: "→ Slalom through cones. Don't lift. SEND IT." },
+    ],
+    outro: [
+      { speaker: "LULU", text: "Best lap of my life." },
+      { speaker: "BIBI", text: "Ok ok j'avoue — c'était magnifique. ❤️" },
+    ],
+  },
+  caterham: {
+    name: 'CATERHAM (CHAMPIONSHIP)',
+    desc: 'French championship. Open wheels. Pure driver 🏆',
+    drawer: drawCaterham,
+    bg: drawDriveBg_track,
+    duration: 28 * 60,
+    obstacleType: 'cone',
+    intro: [
+      { speaker: "LULU", text: "Last one. The Caterham. Championnat de France." },
+      { speaker: "BIBI", text: "MY champion. You're SO good at this Lulu." },
+      { speaker: "LULU", text: "Grip, focus, send. I want this title." },
+      { speaker: "GAME", text: "→ Stay clean through the cones. Show them how a champion drives." },
+    ],
+    outro: [
+      { speaker: "BIBI", text: "YOU'RE A CHAMPION. For real." },
+      { speaker: "LULU", text: "Toujours, with you watching 💖" },
+    ],
+  },
+};
+
+// ─── INIT FUNCTIONS ────────────────────────────────────
+function loadLevel(n) {
+  if (n === 1) {
+    // Endless runner instead of fixed level 2
+    startEndless();
+    return;
+  }
+  scene = 'level1';
+  currentLevel = n;
+  levelData = LEVELS[n];
+  player = {
+    x: 50, y: 380, w: 24, h: 30,
+    vx: 0, vy: 0, onGround: false,
+    facing: 'right', anim: 0, invuln: 0,
+    onBike: false,
+  };
+  partner = null;
+  hearts = levelData.hearts.map(h => ({ ...h, collected: false }));
+  platforms = levelData.platforms.map(p => ({ ...p }));
+  enemies = levelData.enemies.map(e => ({ ...e, hit: false }));
+  goal = { ...levelData.goal, reached: false };
+  cameraX = 0;
+  cameraY = 0;
+  levelComplete = false;
+  particles = [];
+  document.getElementById('levelLabel').textContent = levelData.name;
+  updateHearts();
+  showDialogs(levelData.intro);
+}
+
+function updateHearts() {
+  if (!hearts) return;
+  const got = hearts.filter(h => h.collected).length;
+  document.getElementById('heartsLabel').textContent = `♥ ${got} / ${hearts.length}`;
+}
+
+// ─── DIALOG SYSTEM ─────────────────────────────────────
+function showDialogs(arr, onDone) {
+  dialogQueue = [...arr];
+  dialogActive = true;
+  dialogOnDone = onDone || null;
+  showNextDialog();
+}
+let dialogOnDone = null;
+
+function showNextDialog() {
+  if (dialogQueue.length === 0) {
+    dialogActive = false;
+    document.getElementById('dialog').style.display = 'none';
+    const cb = dialogOnDone;
+    dialogOnDone = null;
+    if (cb) cb();
+    else if (levelComplete) handleLevelComplete();
+    return;
+  }
+  const d = dialogQueue.shift();
+  document.getElementById('dialog').style.display = 'block';
+  document.getElementById('speaker').textContent = d.speaker;
+  document.getElementById('dialogText').textContent = d.text;
+  document.getElementById('speaker').style.color =
+    d.speaker === 'BIBI' ? '#ff5c8a' :
+    d.speaker === 'LULU' ? '#3d7eff' : '#ffec3d';
+}
+
+document.getElementById('dialog').addEventListener('click', () => {
+  if (dialogActive) showNextDialog();
+});
+
+// ─── LEVEL COMPLETE ROUTING ─────────────────────────────
+function handleLevelComplete() {
+  if (currentLevel === 0) {
+    // Show name puzzle (BIBOUILLE)
+    showPuzzle();
+  }
+  // Endless and garage handle their own completion
+}
+
+// ─── PUZZLE (LEVEL 1 ENDING) ────────────────────────────
+const TARGET_WORD = 'BIBOUILLE';
+let puzzleSlots = []; // letters placed
+let puzzleLetterPool = []; // available
+
+function showPuzzle() {
+  scene = 'puzzle';
+  document.getElementById('puzzle').style.display = 'flex';
+  document.getElementById('puzzleQuestion').textContent = 'WHO FOUND YOUR WALLET?';
+  document.getElementById('puzzleFeedback').textContent = '';
+  document.getElementById('puzzleFeedback').className = 'feedback';
+  // Build pool: target letters + 3 random distractors, shuffled
+  const distractors = ['Z', 'X', 'K', 'Q', 'V', 'M'];
+  const pool = TARGET_WORD.split('').concat(distractors.slice(0, 3));
+  // Shuffle
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  puzzleLetterPool = pool.map((ch, i) => ({ ch, used: false, idx: i }));
+  puzzleSlots = [];
+  renderPuzzle();
+}
+
+function renderPuzzle() {
+  const slotsDiv = document.getElementById('puzzleSlots');
+  slotsDiv.innerHTML = '';
+  for (let i = 0; i < TARGET_WORD.length; i++) {
+    const s = document.createElement('div');
+    s.className = 'slot' + (puzzleSlots[i] ? ' filled' : '');
+    s.textContent = puzzleSlots[i] ? puzzleSlots[i].ch : '';
+    slotsDiv.appendChild(s);
+  }
+  const lettersDiv = document.getElementById('puzzleLetters');
+  lettersDiv.innerHTML = '';
+  for (const L of puzzleLetterPool) {
+    const b = document.createElement('button');
+    b.className = 'letter';
+    b.textContent = L.ch;
+    b.disabled = L.used;
+    b.addEventListener('click', () => {
+      if (L.used) return;
+      if (puzzleSlots.length >= TARGET_WORD.length) return;
+      L.used = true;
+      puzzleSlots.push(L);
+      renderPuzzle();
+    });
+    lettersDiv.appendChild(b);
+  }
+}
+
+document.getElementById('puzzleBack').addEventListener('click', () => {
+  if (puzzleSlots.length === 0) return;
+  const last = puzzleSlots.pop();
+  last.used = false;
+  document.getElementById('puzzleFeedback').textContent = '';
+  renderPuzzle();
+});
+document.getElementById('puzzleSubmit').addEventListener('click', () => {
+  const word = puzzleSlots.map(l => l.ch).join('');
+  const fb = document.getElementById('puzzleFeedback');
+  if (word === TARGET_WORD) {
+    fb.textContent = '💖 Sent. Two days later... a reply.';
+    fb.className = 'feedback success';
+    setTimeout(finishPuzzle, 1800);
+  } else if (word.length < TARGET_WORD.length) {
+    fb.textContent = 'Hmm — not quite. Keep typing...';
+    fb.className = 'feedback error';
+  } else {
+    fb.textContent = '« Who? » Try again, mon ange.';
+    fb.className = 'feedback error';
+  }
+});
+
+function finishPuzzle() {
+  document.getElementById('puzzle').style.display = 'none';
+  scene = 'transition';
+  showDialogs([
+    { speaker: 'LULU', text: '« Salut! Thank you so much. You saved me. Can we meet? »' },
+    { speaker: 'BIBI', text: '(My heart did a BOUM. 💓)' },
+    { speaker: 'GAME', text: 'Two months later... we biked from Nice to Roma together.' },
+  ], () => {
+    startEndless();
+  });
+}
+
+// ─── ENDLESS RUNNER SCENE (Level 2) ────────────────────
+function startEndless() {
+  scene = 'endless';
+  currentLevel = 1;
+  document.getElementById('levelLabel').textContent = 'L2 — NICE → ROMA';
+  document.getElementById('heartsLabel').textContent = '🍕 0';
+
+  endless = {
+    bikeY: 380,        // current ground Y for player
+    bikeVY: 0,
+    bikeJumping: false,
+    scrollX: 0,
+    speed: 4,
+    maxSpeed: 9,
+    distance: 0,
+    targetDistance: 6000, // total distance to "Roma"
+    obstacles: [],
+    foods: [],
+    viewBubbles: [],
+    spawnTimer: 60,
+    foodTimer: 30,
+    viewTimer: 200,
+    foodCount: 0,
+    crashed: 0,
+    biomeIdx: 0,
+    biomeProgress: 0,
+    biomeTransition: 0, // 0..1 transition factor
+    bikeAnim: 0,
+    finished: false,
+    foodCollected: {}, // id -> count
+    showBiomeName: 60,
+  };
+
+  showDialogs([
+    { speaker: 'LULU', text: 'Bouboille! Bikes loaded, panniers packed. Nice to Roma — ready?' },
+    { speaker: 'BIBI', text: 'Allez Lulu! Focaccia, pizza, gelato — we eat our way to Roma 🍕' },
+    { speaker: 'LULU', text: 'I bet you\'ll say "che schifo" the first time I sweat. 😏' },
+    { speaker: 'BIBI', text: '(I will. 100%.) You\'re a champion. Pédale!' },
+    { speaker: 'GAME', text: '→ ↑ JUMP over rocks/cars. Collect food & enjoy the views. Reach ROMA 🏛️' },
+  ]);
+}
+
+function updateEndless() {
+  if (dialogActive) return;
+  if (!endless || endless.finished) return;
+  const e = endless;
+
+  // Speed gradually increases
+  e.speed = Math.min(e.maxSpeed, e.speed + 0.0008);
+
+  // Distance
+  e.distance += e.speed;
+  e.scrollX += e.speed;
+  e.bikeAnim += e.speed * 0.15;
+
+  // Biome progression
+  const biomeLength = e.targetDistance / BIOMES.length;
+  const newBiomeIdx = Math.min(BIOMES.length - 1, Math.floor(e.distance / biomeLength));
+  if (newBiomeIdx !== e.biomeIdx) {
+    e.biomeIdx = newBiomeIdx;
+    e.showBiomeName = 120;
+  }
+
+  if (e.showBiomeName > 0) e.showBiomeName--;
+
+  // Jump
+  if ((keys['ArrowUp'] || keys[' '] || keys['w'] || keys['W']) && !e.bikeJumping) {
+    e.bikeVY = -12;
+    e.bikeJumping = true;
+    spawnParticles(150, e.bikeY + 28, '#fff', 5);
+  }
+
+  // Gravity
+  e.bikeVY += 0.6;
+  e.bikeY += e.bikeVY;
+  if (e.bikeY >= 380) {
+    e.bikeY = 380;
+    e.bikeVY = 0;
+    e.bikeJumping = false;
+  }
+
+  // Spawn obstacles
+  e.spawnTimer -= e.speed * 0.4;
+  if (e.spawnTimer <= 0) {
+    const types = ['rock', 'pothole', 'cone', 'log'];
+    const t = types[Math.floor(Math.random() * types.length)];
+    e.obstacles.push({ x: W + 40, y: 400, type: t });
+    e.spawnTimer = 60 + Math.random() * 80;
+  }
+
+  // Spawn food
+  e.foodTimer -= e.speed * 0.4;
+  if (e.foodTimer <= 0) {
+    const food = FOOD_TYPES[Math.floor(Math.random() * FOOD_TYPES.length)];
+    const fy = 280 + Math.random() * 80; // floats in air, jump-able
+    e.foods.push({ x: W + 40, y: fy, food, collected: false });
+    e.foodTimer = 50 + Math.random() * 70;
+  }
+
+  // Spawn view bubbles (souvenir thoughts)
+  e.viewTimer -= e.speed * 0.4;
+  if (e.viewTimer <= 0) {
+    const vw = VIEWS[Math.floor(Math.random() * VIEWS.length)];
+    e.viewBubbles.push({ x: W + 40, y: 100 + Math.random() * 100, text: vw, life: 240 });
+    e.viewTimer = 200 + Math.random() * 200;
+  }
+
+  // Move obstacles
+  for (const o of e.obstacles) o.x -= e.speed;
+  e.obstacles = e.obstacles.filter(o => o.x > -50);
+
+  // Move foods
+  for (const f of e.foods) f.x -= e.speed;
+  e.foods = e.foods.filter(f => f.x > -50 && !f.collected);
+
+  // Move view bubbles
+  for (const v of e.viewBubbles) {
+    v.x -= e.speed * 0.4;
+    v.life--;
+  }
+  e.viewBubbles = e.viewBubbles.filter(v => v.x > -300 && v.life > 0);
+
+  // Cooldown
+  if (e.crashed > 0) e.crashed--;
+
+  // Bike box for collision (around x=130-165)
+  const bikeBox = { x: 120, y: e.bikeY, w: 50, h: 30 };
+
+  // Obstacle collision
+  for (const o of e.obstacles) {
+    if (o.hit) continue;
+    const ob = { x: o.x, y: o.y - 15, w: 24, h: 20 };
+    if (rectIntersect(bikeBox, ob) && e.crashed <= 0) {
+      o.hit = true;
+      e.crashed = 40;
+      e.speed = Math.max(2.5, e.speed * 0.5);
+      spawnParticles(150, e.bikeY + 14, '#ff2d6f', 14);
+    }
+  }
+
+  // Food collection
+  for (const f of e.foods) {
+    if (f.collected) continue;
+    const fb = { x: f.x, y: f.y, w: 20, h: 20 };
+    if (rectIntersect(bikeBox, fb)) {
+      f.collected = true;
+      e.foodCount += f.food.value;
+      e.foodCollected[f.food.id] = (e.foodCollected[f.food.id] || 0) + 1;
+      spawnParticles(f.x + 10, f.y + 10, f.food.color, 10);
+      flashSouvenir(`+${f.food.value} ${f.food.label}`);
+      document.getElementById('heartsLabel').textContent = `🍕 ${e.foodCount}`;
+    }
+  }
+
+  // Particles update
+  particles = particles.filter(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.3;
+    p.life--;
+    return p.life > 0;
+  });
+
+  // Finish line — reached Roma
+  if (e.distance >= e.targetDistance) {
+    e.finished = true;
+    setTimeout(() => {
+      showDialogs([
+        { speaker: 'GAME', text: `🏛️ ROMA! You collected ${e.foodCount} delicious things together!` },
+        { speaker: 'LULU', text: 'Bouboille — we did it. Nice to Roma. On bikes. Together.' },
+        { speaker: 'BIBI', text: 'Best trip of my life, Lulu. Of OUR life. ❤️' },
+        { speaker: 'LULU', text: '...You know what would be even better? Open my garage.' },
+        { speaker: 'BIBI', text: '?! Lulu what do you mea—' },
+        { speaker: 'LULU', text: 'Just trust me. 😏' },
+        { speaker: 'GAME', text: '→ LEVEL 3: LULU\'S DREAM GARAGE.' },
+      ], () => {
+        endless = null;
+        showGarage();
+      });
+    }, 600);
+  }
+}
+
+function renderEndless() {
+  const e = endless;
+  const biome = BIOMES[e.biomeIdx];
+  drawEndlessBg(biome.drawer, e.scrollX, frame);
+
+  // View bubbles (background memories)
+  for (const v of e.viewBubbles) {
+    const alpha = Math.min(1, v.life / 60);
+    ctx.fillStyle = `rgba(10, 10, 31, ${0.7 * alpha})`;
+    ctx.fillRect(v.x - 4, v.y - 4, ctx.measureText(v.text).width * 1.1 + 20, 30);
+    ctx.strokeStyle = `rgba(255, 92, 138, ${alpha})`;
+    ctx.lineWidth = 2;
+    ctx.strokeRect(v.x - 4, v.y - 4, ctx.measureText(v.text).width * 1.1 + 20, 30);
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.font = '18px VT323';
+    ctx.fillText(v.text, v.x + 4, v.y + 16);
+  }
+
+  // Foods
+  for (const f of e.foods) {
+    if (f.collected) continue;
+    drawFood(f.x, f.y, f.food, frame);
+  }
+
+  // Obstacles
+  for (const o of e.obstacles) {
+    if (o.hit) continue;
+    drawObstacle(o.x, o.y, o.type);
+  }
+
+  // Both bikes — Bibi front, Louis behind
+  const louisX = 70;
+  const bibiX = 130;
+  const wobble = e.crashed > 0 ? (Math.random() - 0.5) * 4 : 0;
+  drawLouisOnBike(louisX + wobble, e.bikeY + wobble, e.bikeAnim, 'right');
+  drawBibiOnBike(bibiX + wobble, e.bikeY + wobble, e.bikeAnim, 'right');
+
+  // Particles
+  for (const p of particles) {
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = Math.max(0, p.life / 50);
+    ctx.fillRect(p.x, p.y, 3, 3);
+    ctx.globalAlpha = 1;
+  }
+
+  // Progress bar (top)
+  const progress = Math.min(1, e.distance / e.targetDistance);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+  ctx.fillRect(W / 2 - 160, 30, 320, 18);
+  ctx.fillStyle = '#ff2d6f';
+  ctx.fillRect(W / 2 - 158, 32, 316 * progress, 14);
+  ctx.fillStyle = '#fff';
+  ctx.font = '11px "Press Start 2P", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('NICE', W / 2 - 195, 44);
+  ctx.fillText('ROMA 🏛️', W / 2 + 200, 44);
+  ctx.textAlign = 'left';
+
+  // Speed/KMH
+  ctx.font = '16px VT323';
+  ctx.fillStyle = '#fff';
+  ctx.fillText(`${Math.round(e.speed * 5)} KM/H`, 20, 70);
+
+  // Biome name banner (when changed)
+  if (e.showBiomeName > 0) {
+    const a = e.showBiomeName > 100 ? (120 - e.showBiomeName) / 20 :
+              e.showBiomeName < 30 ? e.showBiomeName / 30 : 1;
+    ctx.fillStyle = `rgba(10, 10, 31, ${0.85 * a})`;
+    ctx.fillRect(W / 2 - 220, 90, 440, 60);
+    ctx.strokeStyle = `rgba(255, 236, 61, ${a})`;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(W / 2 - 220, 90, 440, 60);
+    ctx.fillStyle = `rgba(255, 236, 61, ${a})`;
+    ctx.font = '14px "Press Start 2P", monospace';
+    ctx.textAlign = 'center';
+    ctx.fillText(biome.name, W / 2, 116);
+    ctx.fillStyle = `rgba(255, 255, 255, ${a})`;
+    ctx.font = '18px VT323';
+    ctx.fillText(biome.intro, W / 2, 140);
+    ctx.textAlign = 'left';
+  }
+}
+
+// ─── Endless biome backgrounds ─────────────────────────
+function drawEndlessBg(type, scrollX, t) {
+  if (type === 'street') {
+    // Nice — blue sky, palm trees, sea peek
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#5cb0ff'); g.addColorStop(0.7, '#a0d8f0'); g.addColorStop(1, '#b0e0c0');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // Distant sea
+    ctx.fillStyle = '#2da8d8';
+    ctx.fillRect(0, 240, W, 50);
+    for (let i = 0; i < 20; i++) {
+      const sx = (i * 40 + Math.sin(t / 30 + i) * 4) % W;
+      px(sx, 250 + (i % 3) * 10, 8, 1, '#7ed8f0');
+    }
+    // Beach buildings (Nice promenade)
+    ctx.fillStyle = '#fff';
+    for (let i = 0; i < 10; i++) {
+      const bx = (i * 110 - scrollX * 0.5) % (W + 110) - 55;
+      ctx.fillRect(bx, 240, 90, 60);
+      ctx.fillStyle = '#d8a040';
+      ctx.fillRect(bx - 2, 234, 94, 6);
+      ctx.fillStyle = '#7ec0e8';
+      for (let w = 0; w < 3; w++) {
+        ctx.fillRect(bx + 8 + w * 26, 250, 16, 14);
+      }
+      ctx.fillStyle = '#fff';
+    }
+    // Palm trees
+    for (let i = 0; i < 6; i++) {
+      const tx = (i * 180 - scrollX * 0.7) % (W + 180) - 90;
+      px(tx + 16, 290, 4, 60, '#5a3a1a');
+      ctx.fillStyle = '#3d8a3d';
+      ctx.beginPath();
+      ctx.ellipse(tx + 18, 290, 22, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(tx + 18, 290, 6, 18, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (type === 'coast' || type === 'coast2') {
+    // Liguria coast
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#5ec0ff'); g.addColorStop(0.6, '#ffd970');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // Sun
+    ctx.fillStyle = '#fff200';
+    ctx.beginPath(); ctx.arc(620, 110, 35, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255, 255, 200, 0.4)';
+    ctx.beginPath(); ctx.arc(620, 110, 55, 0, Math.PI * 2); ctx.fill();
+    // Sea
+    ctx.fillStyle = '#2da8d8';
+    ctx.fillRect(0, 200, W, 100);
+    for (let i = 0; i < 30; i++) {
+      const sx = (i * 30 + Math.sin(t / 25 + i) * 5 - scrollX * 0.1) % W;
+      px(sx, 230 + (i % 4) * 14, 10, 1, '#7ed8f0');
+    }
+    // Cliff
+    ctx.fillStyle = '#a06840';
+    for (let i = 0; i < 6; i++) {
+      const bx = (i * 200 - scrollX * 0.3) % (W + 200) - 100;
+      ctx.beginPath();
+      ctx.moveTo(bx, 300);
+      ctx.lineTo(bx + 50, 200);
+      ctx.lineTo(bx + 110, 220);
+      ctx.lineTo(bx + 180, 300);
+      ctx.fill();
+    }
+    // Cinque Terre houses (only for coast2)
+    if (type === 'coast2') {
+      const colors = ['#ff8a4a', '#ffd970', '#ff5c8a', '#9ed05a', '#5cb0ff', '#ff7878'];
+      for (let i = 0; i < 12; i++) {
+        const bx = (i * 100 - scrollX * 0.5) % (W + 100) - 50;
+        const bh = 50 + (i * 13 % 40);
+        const bc = colors[i % colors.length];
+        ctx.fillStyle = bc;
+        ctx.fillRect(bx, 300 - bh, 60, bh);
+        ctx.fillStyle = '#a04030';
+        ctx.fillRect(bx - 2, 300 - bh - 5, 64, 5);
+        for (let r = 0; r < 2; r++) {
+          for (let w = 0; w < 2; w++) {
+            px(bx + 8 + w * 22, 300 - bh + 10 + r * 16, 8, 10, '#3a3a3a');
+            px(bx + 9 + w * 22, 300 - bh + 11 + r * 16, 6, 8, '#7ec0e8');
+          }
+        }
+      }
+    }
+  } else if (type === 'mountain') {
+    // Tuscany hills sunset
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#ff6b9d'); g.addColorStop(0.4, '#ffa07a'); g.addColorStop(0.7, '#ffec3d');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // Sun
+    ctx.fillStyle = '#ff4060';
+    ctx.beginPath(); ctx.arc(560, 200, 50, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = 'rgba(255, 100, 100, 0.3)';
+    ctx.beginPath(); ctx.arc(560, 200, 80, 0, Math.PI * 2); ctx.fill();
+    // Hills layered
+    ctx.fillStyle = '#7ab050';
+    for (let i = 0; i < 5; i++) {
+      const hx = (i * 200 - scrollX * 0.2) % (W + 200) - 100;
+      ctx.beginPath();
+      ctx.arc(hx + 100, 350, 130, Math.PI, 0);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#5a8a40';
+    for (let i = 0; i < 6; i++) {
+      const hx = (i * 170 - scrollX * 0.4) % (W + 170) - 85;
+      ctx.beginPath();
+      ctx.arc(hx + 85, 380, 110, Math.PI, 0);
+      ctx.fill();
+    }
+    ctx.fillStyle = '#3d6028';
+    for (let i = 0; i < 7; i++) {
+      const hx = (i * 140 - scrollX * 0.7) % (W + 140) - 70;
+      ctx.beginPath();
+      ctx.arc(hx + 70, 410, 90, Math.PI, 0);
+      ctx.fill();
+    }
+    // Cypress trees
+    for (let i = 0; i < 7; i++) {
+      const tx = (i * 130 - scrollX * 0.5) % (W + 130) - 65;
+      px(tx + 10, 320, 6, 60, '#2d4a1a');
+      ctx.fillStyle = '#3d5a28';
+      ctx.beginPath();
+      ctx.ellipse(tx + 13, 330, 8, 30, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  } else if (type === 'street2') {
+    // Approaching Roma — pinkish dawn
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, '#ffb070'); g.addColorStop(0.5, '#ffd970'); g.addColorStop(1, '#a0c060');
+    ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+    // Roma skyline silhouette in distance
+    ctx.fillStyle = '#5a3a4a';
+    for (let i = 0; i < 10; i++) {
+      const bx = (i * 80 - scrollX * 0.2) % (W + 80) - 40;
+      const bh = 60 + (i * 17 % 60);
+      ctx.fillRect(bx, 300 - bh, 70, bh);
+      // Dome (Roma vibe)
+      if (i % 3 === 0) {
+        ctx.beginPath();
+        ctx.arc(bx + 35, 300 - bh, 25, Math.PI, 0);
+        ctx.fill();
+        px(bx + 33, 300 - bh - 32, 4, 8, '#5a3a4a');
+      }
+    }
+    // Cypress
+    for (let i = 0; i < 5; i++) {
+      const tx = (i * 200 - scrollX * 0.7) % (W + 200) - 100;
+      px(tx + 10, 320, 6, 50, '#2d4a1a');
+      ctx.fillStyle = '#3d5a28';
+      ctx.beginPath();
+      ctx.ellipse(tx + 13, 330, 8, 28, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  // Ground (consistent across biomes)
+  let groundColor = '#8a6a4a';
+  let groundTop = '#a08a6a';
+  if (type === 'street' || type === 'street2') { groundColor = '#3a3a3a'; groundTop = '#555'; }
+  else if (type === 'coast' || type === 'coast2') { groundColor = '#a08060'; groundTop = '#c0a080'; }
+  else if (type === 'mountain') { groundColor = '#7a5a3a'; groundTop = '#9a7a4a'; }
+
+  ctx.fillStyle = groundColor;
+  ctx.fillRect(0, 410, W, 90);
+  ctx.fillStyle = groundTop;
+  ctx.fillRect(0, 410, W, 4);
+
+  // Road dashes for street biomes
+  if (type === 'street' || type === 'street2') {
+    ctx.fillStyle = '#fff200';
+    for (let i = -1; i < 14; i++) {
+      const lx = (i * 80 - scrollX) % (W + 80);
+      ctx.fillRect(lx, 450, 36, 4);
+    }
+  } else {
+    // Texture pebbles on dirt
+    for (let i = 0; i < 30; i++) {
+      const sx = ((i * 60 - scrollX) % W);
+      px(sx, 440 + (i % 3) * 12, 3, 2, '#5a4030');
+    }
+  }
+}
+
+function drawObstacle(x, y, type) {
+  if (type === 'rock') {
+    drawRock(x, y - 16);
+  } else if (type === 'pothole') {
+    ctx.fillStyle = '#1a1a1a';
+    ctx.beginPath();
+    ctx.ellipse(x + 12, y, 16, 5, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(x + 12, y - 1, 12, 3, 0, 0, Math.PI * 2);
+    ctx.fill();
+  } else if (type === 'cone') {
+    ctx.fillStyle = '#ff5500';
+    ctx.beginPath();
+    ctx.moveTo(x + 10, y - 16);
+    ctx.lineTo(x, y);
+    ctx.lineTo(x + 20, y);
+    ctx.fill();
+    px(x + 4, y - 8, 12, 2, '#fff');
+    px(x + 2, y - 2, 16, 2, '#fff');
+  } else if (type === 'log') {
+    ctx.fillStyle = '#5a3a1a';
+    ctx.fillRect(x, y - 10, 30, 12);
+    ctx.fillStyle = '#7a4a22';
+    ctx.fillRect(x, y - 10, 30, 3);
+    // Rings
+    ctx.fillStyle = '#3a2410';
+    px(x + 2, y - 7, 1, 6, '#3a2410');
+    px(x + 6, y - 7, 1, 6, '#3a2410');
+  }
+}
+
+function drawFood(x, y, food, t) {
+  const bob = Math.sin(t / 10 + x / 50) * 3;
+  ctx.save();
+  ctx.translate(x, y + bob);
+
+  // Glow halo
+  ctx.fillStyle = `${food.color}55`;
+  ctx.beginPath();
+  ctx.arc(10, 10, 16, 0, Math.PI * 2);
+  ctx.fill();
+
+  if (food.id === 'focaccia') {
+    // Rectangular golden bread with green specks (rosemary)
+    px(2, 4, 16, 12, '#ffc060');
+    px(2, 4, 16, 2, '#ffd070');
+    px(4, 6, 2, 1, '#3d8a3d');
+    px(10, 8, 2, 1, '#3d8a3d');
+    px(14, 12, 2, 1, '#3d8a3d');
+    px(7, 14, 2, 1, '#3d8a3d');
+  } else if (food.id === 'pizza') {
+    // Round pizza
+    ctx.fillStyle = '#ffc060';
+    ctx.beginPath(); ctx.arc(10, 10, 9, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#ff5c4a';
+    ctx.beginPath(); ctx.arc(10, 10, 7, 0, Math.PI * 2); ctx.fill();
+    // Mozzarella spots
+    px(8, 8, 2, 2, '#fff');
+    px(12, 11, 2, 2, '#fff');
+    px(7, 12, 2, 2, '#fff');
+    // Basil
+    px(11, 8, 1, 1, '#3d8a3d');
+    px(9, 11, 1, 1, '#3d8a3d');
+  } else if (food.id === 'gelato') {
+    // Cone
+    ctx.fillStyle = '#d8a040';
+    ctx.beginPath();
+    ctx.moveTo(10, 18); ctx.lineTo(4, 8); ctx.lineTo(16, 8); ctx.fill();
+    // Scoops
+    ctx.fillStyle = '#ff8fa3';
+    ctx.beginPath(); ctx.arc(10, 6, 5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(7, 4, 3, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#7ec0e8';
+    ctx.beginPath(); ctx.arc(13, 4, 3, 0, Math.PI * 2); ctx.fill();
+  } else if (food.id === 'pasta') {
+    // Bowl with pasta
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.ellipse(10, 14, 9, 4, 0, 0, Math.PI * 2); ctx.fill();
+    px(2, 9, 16, 5, '#fff');
+    // Sauce + noodles
+    px(3, 7, 14, 3, '#ffd970');
+    px(4, 8, 12, 1, '#ff7050');
+    px(6, 5, 2, 4, '#ffd970');
+    px(10, 4, 2, 5, '#ffd970');
+    px(13, 5, 2, 4, '#ffd970');
+  } else if (food.id === 'lasagne') {
+    // Layered lasagne
+    px(2, 4, 16, 14, '#ff7050');
+    px(2, 4, 16, 2, '#ffd970');
+    px(2, 8, 16, 2, '#fff');
+    px(2, 12, 16, 2, '#fff');
+    px(2, 16, 16, 2, '#ffd970');
+    // Heart on top (Bibi's love)
+    px(7, 2, 2, 1, '#ff2d6f');
+    px(11, 2, 2, 1, '#ff2d6f');
+    px(6, 3, 8, 1, '#ff2d6f');
+    px(7, 4, 6, 1, '#ff2d6f');
+  } else if (food.id === 'wine') {
+    // Wine glass
+    px(8, 14, 4, 4, '#aaa');
+    px(6, 18, 8, 1, '#aaa');
+    ctx.fillStyle = '#aaa';
+    ctx.beginPath();
+    ctx.moveTo(4, 4); ctx.lineTo(16, 4); ctx.lineTo(12, 14); ctx.lineTo(8, 14);
+    ctx.fill();
+    ctx.fillStyle = '#a02040';
+    ctx.beginPath();
+    ctx.moveTo(5, 5); ctx.lineTo(15, 5); ctx.lineTo(11, 12); ctx.lineTo(9, 12);
+    ctx.fill();
+  }
+
+  // Sparkle
+  const sparkle = Math.floor(t / 6) % 8;
+  if (sparkle < 2) {
+    px(0, 2, 1, 1, '#fff');
+    px(18, 14, 1, 1, '#fff');
+  }
+
+  ctx.restore();
+}
+
+// ─── GARAGE (LEVEL 3) ───────────────────────────────────
+function showGarage() {
+  scene = 'garage';
+  document.getElementById('levelLabel').textContent = 'L3 — LULU\'S GARAGE';
+  document.getElementById('heartsLabel').textContent = '';
+  document.getElementById('garage').style.display = 'flex';
+  // Render cars
+  const cont = document.getElementById('garageCars');
+  cont.innerHTML = '';
+  const order = ['convertible', 'patrol', 'ferrari', 'caterham'];
+  for (const key of order) {
+    const cfg = CARS[key];
+    const card = document.createElement('div');
+    card.className = 'car' + (carsCompleted[key] ? ' done' : '');
+    card.innerHTML = `
+      <canvas width="280" height="80"></canvas>
+      <div class="name">${cfg.name}</div>
+      <div class="desc">${cfg.desc}</div>
+    `;
+    const cv = card.querySelector('canvas');
+    const cctx = cv.getContext('2d');
+    cctx.imageSmoothingEnabled = false;
+    // Draw mini preview using same drawer
+    cctx.save();
+    cctx.scale(2.4, 2.4);
+    // Draw a tiny ground
+    cctx.fillStyle = '#2a2a2a';
+    cctx.fillRect(0, 28, 120, 4);
+    // Draw the car (using global ctx? no, let's redraw with local)
+    drawCarOnCtx(cctx, cfg.drawer, 30, 6, 0);
+    cctx.restore();
+    card.addEventListener('click', () => startDrive(key));
+    cont.appendChild(card);
+  }
+  // Update sub line
+  const remaining = order.filter(k => !carsCompleted[k]).length;
+  if (remaining === 0) {
+    document.getElementById('garageSub').textContent = '✓ All four driven. Click any car to revisit, or close the garage 💖';
+    // Add finish button
+    if (!document.getElementById('finishBtn')) {
+      const btn = document.createElement('button');
+      btn.id = 'finishBtn';
+      btn.className = 'pixelBtn';
+      btn.style.marginTop = '16px';
+      btn.style.fontSize = '12px';
+      btn.textContent = '▶ FINISH (your gift awaits)';
+      btn.addEventListener('click', () => {
+        document.getElementById('garage').style.display = 'none';
+        showEndScreen();
+      });
+      document.getElementById('garage').appendChild(btn);
+    }
+  } else {
+    document.getElementById('garageSub').textContent =
+      `Pick a car. Drive it. Come back. ${4 - remaining} / 4 driven. ♥`;
+  }
+}
+
+function drawCarOnCtx(c, drawer, x, y, anim) {
+  // Switch our global ctx temporarily to local
+  const oldCtx = ctx;
+  // Hack — drawers use global ctx; redirect via making a temporary global
+  window.ctx = c;
+  drawer(x, y, anim);
+  window.ctx = oldCtx;
+}
+
+// ─── DRIVE SCENE ────────────────────────────────────────
+function startDrive(key) {
+  document.getElementById('garage').style.display = 'none';
+  scene = 'drive';
+  const cfg = CARS[key];
+  document.getElementById('levelLabel').textContent = cfg.name;
+  document.getElementById('heartsLabel').textContent = '';
+  drive = {
+    key,
+    cfg,
+    x: 80, y: 360,
+    vx: 0,
+    scrollX: 0,
+    timer: cfg.duration,
+    obstacles: [],
+    obstacleSpawn: 50,
+    crashed: 0,
+    finished: false,
+    score: 0,
+    speed: 4,
+  };
+  showDialogs(cfg.intro, () => {
+    // Driving begins after intro
+  });
+}
+
+function updateDrive() {
+  if (dialogActive) return;
+  if (drive.finished) return;
+
+  // Speed control
+  if (keys['ArrowUp'] || keys['w'] || keys['W']) drive.speed = Math.min(8, drive.speed + 0.1);
+  else if (keys['ArrowDown'] || keys['s'] || keys['S']) drive.speed = Math.max(1.5, drive.speed - 0.15);
+  else drive.speed = Math.max(3, drive.speed - 0.02);
+
+  drive.scrollX += drive.speed;
+  drive.timer -= drive.speed * 0.5; // adjust for variable speed
+
+  // Lateral movement (vertical Y on track)
+  if (keys['ArrowLeft'] || keys['a'] || keys['A']) drive.y = Math.max(345, drive.y - 2);
+  if (keys['ArrowRight'] || keys['d'] || keys['D']) drive.y = Math.min(440, drive.y + 2);
+
+  // Spawn obstacles
+  drive.obstacleSpawn -= drive.speed * 0.4;
+  if (drive.obstacleSpawn <= 0) {
+    const lane = 360 + Math.floor(Math.random() * 4) * 22; // 4 lanes
+    drive.obstacles.push({ x: W + 40, y: lane, hit: false, type: drive.cfg.obstacleType });
+    drive.obstacleSpawn = 50 + Math.random() * 60;
+  }
+
+  // Move obstacles
+  for (const o of drive.obstacles) {
+    o.x -= drive.speed;
+  }
+  drive.obstacles = drive.obstacles.filter(o => o.x > -50);
+
+  // Collision with car
+  if (drive.crashed > 0) drive.crashed--;
+  for (const o of drive.obstacles) {
+    if (o.hit) continue;
+    if (Math.abs(o.x - drive.x - 30) < 26 && Math.abs(o.y - drive.y - 12) < 16) {
+      o.hit = true;
+      drive.crashed = 30;
+      drive.speed = Math.max(2, drive.speed * 0.5);
+      spawnParticles(drive.x + 30, drive.y + 12, '#ff2d6f', 12);
+    }
+  }
+
+  // Finish
+  if (drive.timer <= 0) {
+    drive.finished = true;
+    carsCompleted[drive.key] = true;
+    showDialogs(drive.cfg.outro, () => {
+      drive = null;
+      showGarage();
+    });
+  }
+}
+
+function renderDrive() {
+  const d = drive;
+  d.cfg.bg(frame, d.scrollX);
+
+  // Obstacles
+  for (const o of d.obstacles) {
+    if (o.hit) continue;
+    if (o.type === 'palm') {
+      px(o.x + 8, o.y - 30, 4, 30, '#5a3a1a');
+      ctx.fillStyle = '#3d8a3d';
+      ctx.beginPath();
+      ctx.ellipse(o.x + 10, o.y - 30, 20, 6, 0, 0, Math.PI * 2);
+      ctx.ellipse(o.x + 10, o.y - 30, 6, 16, 0, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (o.type === 'rock') {
+      drawRock(o.x, o.y - 10);
+    } else { // cone
+      ctx.fillStyle = '#ff5500';
+      ctx.beginPath();
+      ctx.moveTo(o.x + 8, o.y);
+      ctx.lineTo(o.x, o.y + 18);
+      ctx.lineTo(o.x + 16, o.y + 18);
+      ctx.fill();
+      px(o.x + 2, o.y + 6, 12, 2, '#fff');
+    }
+  }
+
+  // Car (with shake when crashed)
+  const shake = d.crashed > 0 ? (Math.random() - 0.5) * 4 : 0;
+  d.cfg.drawer(d.x + shake, d.y + shake, frame * d.speed * 0.3);
+
+  // Particles
+  for (const p of particles) {
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = Math.max(0, p.life / 50);
+    ctx.fillRect(p.x, p.y, 3, 3);
+    ctx.globalAlpha = 1;
+  }
+
+  // HUD overlay: progress bar
+  const progress = 1 - (d.timer / d.cfg.duration);
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+  ctx.fillRect(W / 2 - 150, 30, 300, 16);
+  ctx.fillStyle = '#ff2d6f';
+  ctx.fillRect(W / 2 - 148, 32, 296 * progress, 12);
+  ctx.fillStyle = '#fff';
+  ctx.font = '12px "Press Start 2P", monospace';
+  ctx.textAlign = 'center';
+  ctx.fillText('🏁', W / 2 + 158, 42);
+  ctx.textAlign = 'left';
+
+  // Speed indicator
+  ctx.font = '14px "VT323", monospace';
+  ctx.fillStyle = '#fff';
+  ctx.fillText(`${Math.round(d.speed * 30)} KM/H`, 20, 60);
+}
+
+// ─── INPUT ─────────────────────────────────────────────
+window.addEventListener('keydown', e => {
+  keys[e.key] = true;
+  if ((e.key === ' ' || e.key === 'Enter') && dialogActive) {
+    e.preventDefault();
+    showNextDialog();
+  }
+  if (e.key === ' ') e.preventDefault();
+});
+window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+function bindBtn(id, key) {
+  const b = document.getElementById(id);
+  ['touchstart', 'mousedown'].forEach(ev =>
+    b.addEventListener(ev, e => { e.preventDefault(); keys[key] = true; }));
+  ['touchend', 'mouseup', 'mouseleave', 'touchcancel'].forEach(ev =>
+    b.addEventListener(ev, e => { e.preventDefault(); keys[key] = false; }));
+}
+bindBtn('btnLeft', 'ArrowLeft');
+bindBtn('btnRight', 'ArrowRight');
+bindBtn('btnDown', 'ArrowDown');
+bindBtn('btnJump', 'ArrowUp');
+
+// ─── PHYSICS / UPDATE ─────────────────────────────────
+function update() {
+  if (scene === 'drive') {
+    updateDrive();
+    return;
+  }
+  if (scene === 'endless') {
+    updateEndless();
+    return;
+  }
+  if (scene !== 'level1') return;
+  if (dialogActive) return;
+
+  player.anim += 0.2;
+
+  // Movement
+  if (keys['ArrowLeft'] || keys['a'] || keys['A']) {
+    player.vx = -SPEED;
+    player.facing = 'left';
+  } else if (keys['ArrowRight'] || keys['d'] || keys['D']) {
+    player.vx = SPEED;
+    player.facing = 'right';
+  } else {
+    player.vx *= 0.7;
+  }
+
+  // Jump
+  if ((keys['ArrowUp'] || keys[' '] || keys['w'] || keys['W']) && player.onGround) {
+    player.vy = JUMP_POWER;
+    player.onGround = false;
+    spawnParticles(player.x + 12, player.y + 30, '#fff', 4);
+  }
+
+  // Gravity
+  player.vy += GRAVITY;
+  if (player.vy > 14) player.vy = 14;
+
+  // X
+  player.x += player.vx;
+  if (player.x < 0) player.x = 0;
+  if (player.x > levelData.width - player.w) player.x = levelData.width - player.w;
+
+  // Y + collision
+  player.y += player.vy;
+  player.onGround = false;
+  for (const p of platforms) {
+    if (player.x + player.w > p.x && player.x < p.x + p.w) {
+      if (player.vy >= 0 && player.y + player.h > p.y && player.y + player.h < p.y + 30) {
+        player.y = p.y - player.h;
+        player.vy = 0;
+        player.onGround = true;
+      }
+    }
+  }
+
+  // Fall off
+  if (player.y > H + 100) {
+    player.x = Math.max(50, player.x - 200);
+    player.y = 100;
+    player.vy = 0;
+    if (player.invuln <= 0) player.invuln = 60;
+  }
+
+  if (player.invuln > 0) player.invuln--;
+
+  // Partner follow (level 2)
+  if (partner) {
+    partner.anim += 0.2;
+    const targetPx = player.x - 40;
+    partner.x += (targetPx - partner.x) * 0.12;
+    partner.y = player.y;
+    partner.facing = player.facing;
+  }
+
+  // Enemy collision
+  for (const e of enemies) {
+    if (e.hit) continue;
+    if (rectIntersect(player, { x: e.x, y: e.y, w: 16, h: 16 })) {
+      if (player.invuln <= 0) {
+        player.vy = -7;
+        player.vx = player.facing === 'right' ? -4 : 4;
+        player.invuln = 60;
+        spawnParticles(player.x + 12, player.y + 15, '#ff2d6f', 8);
+      }
+    }
+  }
+
+  // Heart pickup
+  for (const h of hearts) {
+    if (h.collected) continue;
+    if (rectIntersect(player, { x: h.x, y: h.y, w: 14, h: 12 })) {
+      h.collected = true;
+      updateHearts();
+      spawnParticles(h.x + 7, h.y + 6, '#ff2d6f', 12);
+      flashSouvenir(h.text);
+    }
+  }
+
+  // Goal
+  if (!goal.reached && rectIntersect(player, { x: goal.x, y: goal.y - 10, w: 40, h: 40 })) {
+    goal.reached = true;
+    levelComplete = true;
+    spawnParticles(goal.x + 20, goal.y, '#ffec3d', 30);
+    setTimeout(() => showDialogs(levelData.outro), 600);
+  }
+
+  // Particles
+  particles = particles.filter(p => {
+    p.x += p.vx;
+    p.y += p.vy;
+    p.vy += 0.3;
+    p.life--;
+    return p.life > 0;
+  });
+
+  // Camera
+  const targetCamX = player.x - W / 2 + 100;
+  cameraX += (targetCamX - cameraX) * 0.1;
+  cameraX = Math.max(0, Math.min(cameraX, levelData.width - W));
+}
+
+function flashSouvenir(text) {
+  souvenirText = text;
+  souvenirTimer = 140;
+}
+
+function rectIntersect(a, b) {
+  return a.x < b.x + b.w && a.x + a.w > b.x &&
+         a.y < b.y + b.h && a.y + a.h > b.y;
+}
+
+function spawnParticles(x, y, color, count) {
+  for (let i = 0; i < count; i++) {
+    particles.push({
+      x, y,
+      vx: (Math.random() - 0.5) * 6,
+      vy: -Math.random() * 5 - 2,
+      color, life: 30 + Math.random() * 20,
+    });
+  }
+}
+
+// ─── RENDER ─────────────────────────────────────────────
+function render() {
+  frame++;
+
+  if (scene === 'drive' && drive) {
+    renderDrive();
+    return;
+  }
+
+  if (scene === 'endless' && endless) {
+    renderEndless();
+    return;
+  }
+
+  if (scene !== 'level1') {
+    // Idle frame (title shown)
+    return;
+  }
+
+  levelData.bg(frame);
+
+  ctx.save();
+  ctx.translate(-cameraX, 0);
+
+  // Platforms
+  for (const p of platforms) {
+    if (p.h > 30) {
+      ctx.fillStyle = '#5a4a3a';
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+      ctx.fillStyle = '#7a6a4a';
+      ctx.fillRect(p.x, p.y, p.w, 4);
+      for (let i = 0; i < p.w; i += 16) {
+        ctx.fillStyle = '#3a2a1a';
+        ctx.fillRect(p.x + i, p.y + 8, 2, 2);
+        ctx.fillRect(p.x + i + 8, p.y + 20, 2, 2);
+      }
+    } else {
+      ctx.fillStyle = '#aaa';
+      ctx.fillRect(p.x, p.y, p.w, p.h);
+      ctx.fillStyle = '#ddd';
+      ctx.fillRect(p.x, p.y, p.w, 2);
+      ctx.fillStyle = '#777';
+      ctx.fillRect(p.x, p.y + p.h - 2, p.w, 2);
+    }
+  }
+
+  // Enemies
+  for (const e of enemies) if (!e.hit) drawTrash(e.x, e.y, e.type);
+
+  // Hearts
+  for (const h of hearts) if (!h.collected) drawHeart(h.x, h.y, frame);
+
+  // Goal
+  if (!goal.reached) {
+    if (goal.type === 'wallet') drawWallet(goal.x, goal.y, frame);
+    else if (goal.type === 'cake') drawCake(goal.x, goal.y, frame);
+  }
+
+  // Player (Bibi solo in Level 1)
+  if (!(player.invuln > 0 && Math.floor(frame / 4) % 2 === 0)) {
+    drawBibi(player.x, player.y, player.facing, player.anim);
+  }
+
+  // Particles
+  for (const p of particles) {
+    ctx.fillStyle = p.color;
+    ctx.globalAlpha = Math.max(0, p.life / 50);
+    ctx.fillRect(p.x, p.y, 3, 3);
+    ctx.globalAlpha = 1;
+  }
+
+  ctx.restore();
+
+  // Souvenir banner
+  if (souvenirTimer > 0) {
+    souvenirTimer--;
+    const alpha = souvenirTimer > 120 ? (140 - souvenirTimer) / 20 :
+                  souvenirTimer < 20 ? souvenirTimer / 20 : 1;
+    ctx.fillStyle = `rgba(255, 92, 138, ${0.92 * alpha})`;
+    ctx.fillRect(W / 2 - 260, 50, 520, 50);
+    ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.lineWidth = 3;
+    ctx.strokeRect(W / 2 - 260, 50, 520, 50);
+    ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+    ctx.font = '20px VT323';
+    ctx.textAlign = 'center';
+    ctx.fillText(souvenirText, W / 2, 80);
+    ctx.textAlign = 'left';
+  }
+}
+
+function loop() {
+  update();
+  render();
+  requestAnimationFrame(loop);
+}
+
+// ─── END SCREEN ────────────────────────────────────────
+function showEndScreen() {
+  scene = 'end';
+  document.getElementById('endScreen').style.display = 'flex';
+  document.getElementById('endMsg').innerHTML = `
+    <p>My <span class="pink">Lulu</span>, my <span class="pink">Luigi</span> adoré,</p>
+    <br>
+    <p>Two years ago, I found a red wallet under Pont Alexandre III.</p>
+    <p>Today, I found something so much bigger.</p>
+    <br>
+    <p>27 — and you say you're getting old? <span class="yellow">Che schifo</span> 😂</p>
+    <p>The truth is, every day you're <span class="pink">more handsome</span>,</p>
+    <p>and every adventure with you is <span class="pink">more beautiful</span> than the last.</p>
+    <br>
+    <p>From Nice to Roma, from Tuscan hills to the Caterham championship,</p>
+    <p>from my Sunday lasagne to the convertible we'll buy one day —</p>
+    <p>you're <span class="yellow">special</span>. Truly <span class="yellow">special</span>.</p>
+    <br>
+    <p><span class="pink">You're a champion.</span> And I, your petite créature sauvage,</p>
+    <p>love you to the moon and back. 💖</p>
+    <br>
+    <p>🎂 Happy birthday, mon amour. 🎂</p>
+  `;
+  // Confetti
+  for (let i = 0; i < 80; i++) {
+    setTimeout(() => {
+      const c = document.createElement('div');
+      c.className = 'confetti';
+      c.style.left = Math.random() * 100 + '%';
+      c.style.top = '-20px';
+      c.style.background = ['#ff2d6f', '#ffec3d', '#3d7eff', '#ff5c8a', '#fff', '#50d050'][Math.floor(Math.random() * 6)];
+      c.style.animationDuration = (2 + Math.random() * 2.5) + 's';
+      document.getElementById('endScreen').appendChild(c);
+      setTimeout(() => c.remove(), 4500);
+    }, i * 60);
+  }
+}
+
+// ─── START / RESTART ──────────────────────────────────
+document.getElementById('startBtn').addEventListener('click', () => {
+  document.getElementById('title').style.display = 'none';
+  loadLevel(0);
+  loop();
+});
+document.getElementById('restartBtn').addEventListener('click', () => {
+  document.getElementById('endScreen').style.display = 'none';
+  // Reset
+  carsCompleted = { convertible: false, patrol: false, ferrari: false, caterham: false };
+  const fb = document.getElementById('finishBtn');
+  if (fb) fb.remove();
+  loadLevel(0);
+});
+</script>
+</body>
+</html>
